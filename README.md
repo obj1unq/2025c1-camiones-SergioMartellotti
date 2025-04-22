@@ -38,7 +38,7 @@ Se pide agregar estos mensajes al camión:
 * `totalBultos()`: la suma de la cantidad de bultos que está transportando. KnightRider, arena a granel y residuos radioactivos son 1 bulto. Bumblebee y embalaje de seguridad son dos. Paquete de ladrillos es 1 hasta 100 ladrillos, 2 de 101 a 300, 3 301 o más. Batería antiaérea: 1 si no tiene misiles, 2 si tiene. Contenedor portuario: 1 + los bultos que tiene adentro.
 
 ## Consecuencias de la carga.
-Agregar la posibilidad de que al cargar una cosa en el camión, esta pueda sufrir cambios. Estos cambios tienen que ocurrir automáticamente cuando, por ejemplo, se ejecuta `camion.cargar(arenaGranel)`. Cómo debería reaccionar cada cosa:
+
 
 - KnightRider: no hace nada;
 - Bumblebee: pasa a robot;
@@ -68,17 +68,6 @@ del almacén se configura en 3, y el camión contiene a Bumblebee y Knight Rider
 
 Se pide que el camión entienda el mensaje `transportar(destino, camino)` Donde destino es el almacén (pero se parametriza porque podría
 aparecer otros lugares) y el camino es una de las dos opciones (ruta 9 o caminos vecinales, pero también se debe pensar que pueda haber otros caminos
-polimórficos.
+polimórficos).
 
 Es importante realizar las validaciones correspondientes.
-
-
-
-
-
-
- 
-
-
-
-
