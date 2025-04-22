@@ -1,0 +1,184 @@
+import cosas.*
+import camion.*
+describe "tests de Camiones" {
+
+    method initialize() {
+        almacen.disponibilidad(5)
+    }
+    test "carga knightRider y bumblebee y todo lo cargado pesa par" {
+        camion.cargar(knightRider)
+        camion.cargar(bumblebee)
+        assert.that(camion.todoPesoPar())
+    }
+
+    test "carga knightRider y bumblebee y hay uno que pesa 500 y nada que pese 1000" {
+        camion.cargar(knightRider)
+        camion.cargar(bumblebee)
+        assert.that(camion.hayAlgunoQuePesa(500))
+        assert.notThat(camion.hayAlgunoQuePesa(1000))
+    }
+
+    test "carga knightRider, bumblebee y 212 ladrillos, busca el de nivel 2"{
+
+        assert.throwsException({camion.elDeNivel(2000)})
+
+        camion.cargar(knightRider)
+        camion.cargar(bumblebee)
+        paqueteDeLadrillos.cantidad(200)
+        camion.cargar(paqueteDeLadrillos)
+
+        assert.equals(paqueteDeLadrillos, camion.elDeNivel(2))
+        assert.throwsException({camion.elDeNivel(2000)})
+    }
+
+    test "carga knightRider, bumblebee y 212 ladrillos, busca los que tengan más de 9 de peligrosidad"{
+
+        camion.cargar(knightRider)
+        camion.cargar(bumblebee)
+        paqueteDeLadrillos.cantidad(200)
+        camion.cargar(paqueteDeLadrillos)
+
+        assert.equals(
+            #{knightRider,bumblebee}, camion.objetosQueSuperanPeligrosidad(9))
+    } 
+
+    test "carga knightRider, bumblebee y arena, busca los mas peligrosos que paqueteDeLadrillos de 200 ladrillos"{
+
+        camion.cargar(knightRider)
+        camion.cargar(bumblebee)
+        camion.cargar(arenaAGranel)
+        paqueteDeLadrillos.cantidad(200)
+
+        assert.equals(
+            #{knightRider,bumblebee}, camion.objetosMasPeligrososQue(paqueteDeLadrillos))
+    } 
+
+    test "carga knightRider, bumblebee y arena y puede circular"{
+
+        camion.cargar(knightRider)
+        camion.cargar(bumblebee)
+        camion.cargar(arenaAGranel)
+
+        assert.that(camion.puedeCircularEnRuta(50))
+        assert.notThat(camion.puedeCircularEnRuta(5))
+    }
+
+    test "carga residuos radioactivos y busca algo que pese entre 10 y 20"{
+
+        camion.cargar(residuosRadioactivos)
+        assert.that(camion.tieneAlgoQuePesaEntre(10,20))
+    }   
+
+    test "carga residuos radioactivos embalaje de seguridad con knigthRider, busca el mas pesado"{
+
+        camion.cargar(residuosRadioactivos)
+        embalajeDeSeguridad.cosa(knightRider)
+        camion.cargar(embalajeDeSeguridad)
+        assert.equals(embalajeDeSeguridad, camion.cosaMasPesada())
+    }
+
+    test "carga knightRider, bumblebee, arenaAGranel, bateriaAntiaerea embalada, busca pesos y bultos "{
+        camion.cargar(knightRider)
+        camion.cargar(bumblebee)
+        camion.cargar(arenaAGranel)
+        embalajeDeSeguridad.cosa(bateriaAntiaerea)
+        camion.cargar(embalajeDeSeguridad)
+
+        assert.equals([500,800,12,200], camion.pesos())
+        assert.equals(6, camion.totalBultos())
+    }
+
+    test "contenedor portuario, cargado en camion, con knigtRider y bumblebee dentro de él"{
+        contenedorPortuario.cargar(knightRider)
+        contenedorPortuario.cargar(bumblebee)
+        camion.cargar(contenedorPortuario)
+
+        assert.equals([1400], camion.pesos())
+    }
+
+    test "transporte con problema de peso"{
+        embalajeDeSeguridad.cosa(bateriaAntiaerea)
+        camion.cargar(embalajeDeSeguridad)
+
+        contenedorPortuario.cargar(knightRider)
+        contenedorPortuario.cargar(bumblebee)
+        camion.cargar(contenedorPortuario)
+
+        almacen.disponibilidad(10)
+
+        // No puede circular por sobrepeso
+        assert.equals(2600,camion.pesoTotal())
+        assert.that(camion.excedidoDePeso())
+        
+        assert.equals(6,camion.totalBultos())
+        assert.that(camion.puedeDescargarEn(almacen))
+        // El camion no puede circular por peligrosidad 10 de knigthRider
+        assert.notThat(camion.puedeCircularPor(ruta9))
+        assert.notThat(camion.transportar(almacen, ruta9))
+    }
+
+    test "transporte con problema de peligrosidad"{
+
+        contenedorPortuario.cargar(knightRider)
+        contenedorPortuario.cargar(bumblebee)
+        camion.cargar(contenedorPortuario)
+
+        almacen.disponibilidad(10)
+
+        assert.notThat(camion.excedidoDePeso())
+        
+        assert.that(camion.puedeDescargarEn(almacen))
+        // El camion no puede circular por peligrosidad 10 de knigthRider
+        assert.notThat(camion.puedeCircularPor(ruta9))
+        assert.notThat(camion.transportar(almacen, ruta9))
+    }    
+
+    test "transporte con problema de peso en caminos vecinales"{
+
+        contenedorPortuario.cargar(knightRider)
+        contenedorPortuario.cargar(bumblebee)
+        camion.cargar(contenedorPortuario)
+
+        almacen.disponibilidad(10)
+
+        assert.notThat(camion.excedidoDePeso())
+        caminosVecinales.pesoMaximo(1000)
+        assert.that(camion.puedeDescargarEn(almacen))
+        // El camion no puede circular por peligrosidad 10 de knigthRider
+        assert.notThat(camion.puedeCircularPor(caminosVecinales))
+        assert.notThat(camion.transportar(almacen, caminosVecinales))
+    }
+
+    test "transporte pasa por ruta9"{
+
+        contenedorPortuario.cargar(arenaAGranel)
+        contenedorPortuario.cargar(paqueteDeLadrillos)
+        camion.cargar(contenedorPortuario)
+
+        almacen.disponibilidad(10)
+
+        assert.notThat(camion.excedidoDePeso())
+
+        assert.that(camion.puedeDescargarEn(almacen))
+        // El camion no puede circular por peligrosidad 10 de knigthRider
+        assert.that(camion.puedeCircularPor(ruta9))
+        assert.that(camion.transportar(almacen, ruta9))
+    }
+
+    test "transporte pasa por caminos vecinales"{
+
+        contenedorPortuario.cargar(arenaAGranel)
+        contenedorPortuario.cargar(paqueteDeLadrillos)
+        camion.cargar(contenedorPortuario)
+
+        almacen.disponibilidad(10)
+
+        assert.notThat(camion.excedidoDePeso())
+        caminosVecinales.pesoMaximo(2000)
+
+        assert.that(camion.puedeDescargarEn(almacen))
+        // El camion no puede circular por peligrosidad 10 de knigthRider
+        assert.that(camion.puedeCircularPor(caminosVecinales))
+        assert.that(camion.transportar(almacen, caminosVecinales))
+    }
+}
